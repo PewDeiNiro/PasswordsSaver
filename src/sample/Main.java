@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Main extends Application {
@@ -21,7 +22,7 @@ public class Main extends Application {
     @FXML
     PasswordField regPassField, regPassControlField, authPassField;
 
-    ArrayList<User> users = new ArrayList<>();
+    static ArrayList<User> users = new ArrayList<>();
 
     RSA rsa;
 
@@ -35,7 +36,9 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         try {
             loadList();
-        } catch (IOException e){}
+        } catch (IOException e){
+
+        }
         rsa = new RSA();
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         Scene scene = new Scene(root);
@@ -88,10 +91,19 @@ public class Main extends Application {
                 users.add(new User(tempArray[0], tempArray[1]));
             }
         }
+        reader.close();
+
+    }
+
+    public void printList(List list){
+        for (int i = 0; i < list.size(); i++){
+            System.out.println(list.get(i));
+        }
     }
 
     public boolean checkUser(String login, String password){
-        for (User user : users){
+        for (int i = 0; i < users.size(); i++){
+            User user = users.get(i);
             if (user.getLogin().equals(login) && user.getPassword().equals(password)){
                 return true;
             }
