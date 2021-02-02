@@ -11,18 +11,18 @@ import javafx.stage.Stage;
 
 import javax.swing.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class Main extends Application {
 
     @FXML
-    TextField regLoginField, authLoginField;
+    TextField regLoginField, authLoginField, addLoginField, nameSystemField;
     @FXML
-    PasswordField regPassField, regPassControlField, authPassField;
+    PasswordField regPassField, regPassControlField, authPassField, addPassField;
 
     static ArrayList<User> users = new ArrayList<>();
+    static HashMap<HashMap<User,String>, HashMap<String, String>> passwords = new HashMap<>();
 
     RSA rsa;
 
@@ -138,5 +138,70 @@ public class Main extends Application {
             }
         }
         return null;
+    }
+
+    public String getPasswordByLogin(String login){
+        for (User user : users){
+            if (user.getLogin().equals(login)){
+                return user.getPassword();
+            }
+        }
+        return "";
+    }
+
+    public boolean checkNotEmpty(String text){
+        if (text.trim().equals("")){
+            return false;
+        }
+        return true;
+    }
+
+    public void addAccount(){
+        String systemName = nameSystemField.getText();
+        String login = addLoginField.getText();
+        String password = addPassField.getText();
+        if (authUser != null && (checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password))){
+            HashMap<String, String> info = new HashMap<>();
+            HashMap<User, String> name = new HashMap<>();
+            info.put(login, password);
+            name.put(authUser, systemName);
+            passwords.put(name, info);
+            try {
+                savePasswords();
+            } catch (IOException e){}
+        }
+        else if (authUser == null){
+            JOptionPane.showMessageDialog(null, "Войдите в аккаунт", "Ошибка", JOptionPane.WARNING_MESSAGE);
+        }
+        else if (!(checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password))){
+            JOptionPane.showMessageDialog(null, "Не оставляйте поля пустыми(при надобности на поле логин поставьте \"-\")", "Ошибка", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public void savePasswords() throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter("passwords.txt"));
+        String resString = "";
+        Iterator<Map.Entry<HashMap<User, String>, HashMap<String, String>>> passIterator = passwords.entrySet().iterator();
+        while (passIterator.hasNext()){
+            Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = passIterator.next();
+            HashMap<User,String> name = pair.getKey();
+            Iterator<Map.Entry<User, String>> nameIterator = name.entrySet().iterator();
+            while (nameIterator.hasNext()){
+                Map.Entry<User, String> namePair = nameIterator.next();
+                User user = namePair.getKey();
+                String systemName = namePair.getValue();
+                resString += user.getLogin() + " " + systemName + " ";
+            }
+            HashMap<String, String> info = pair.getValue();
+            Iterator<Map.Entry<String, String>> infoIterator = info.entrySet().iterator();
+            while (infoIterator.hasNext()){
+                Map.Entry<String, String> infoPair = infoIterator.next();
+                String login = infoPair.getKey();
+                String password = infoPair.getValue();
+                resString += login + " " + password + "\n";
+            }
+        }
+        writer.write(resString);
+        writer.close();
     }
 }
