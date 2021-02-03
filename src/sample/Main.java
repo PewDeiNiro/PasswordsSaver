@@ -24,7 +24,7 @@ public class Main extends Application {
     static ArrayList<User> users = new ArrayList<>();
     static HashMap<HashMap<User,String>, HashMap<String, String>> passwords = new HashMap<>();
 
-    RSA rsa;
+    static RSA rsa;
 
     User authUser;
 
@@ -36,6 +36,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         try {
             loadList();
+            loadPasswords();
         } catch (IOException e){
 
         }
@@ -203,5 +204,58 @@ public class Main extends Application {
         }
         writer.write(resString);
         writer.close();
+    }
+    //returns login user, name of account, login of account, password of account
+    public String[] getInfoFromPasswordsMap(HashMap<HashMap<User, String>, HashMap<String, String>> map){
+        String[] info = new String[4];
+        Iterator<Map.Entry<HashMap<User,String>, HashMap<String, String>>> mainIterator = map.entrySet().iterator();
+        while (mainIterator.hasNext()){
+            Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = mainIterator.next();
+            HashMap<User, String> name = pair.getKey();
+            Iterator<Map.Entry<User, String>> nameIterator = name.entrySet().iterator();
+            while (nameIterator.hasNext()){
+                Map.Entry<User, String> namePair = nameIterator.next();
+                User user = namePair.getKey();
+                String nameAccount = namePair.getValue();
+                info[0] = user.getLogin();
+                info[1] = nameAccount;
+            }
+            HashMap<String, String> infoMap = pair.getValue();
+            Iterator<Map.Entry<String, String>> infoIterator = infoMap.entrySet().iterator();
+            while (infoIterator.hasNext()){
+                Map.Entry<String, String> infoPair = infoIterator.next();
+                String loginAccount = infoPair.getKey();
+                String passAccount = infoPair.getValue();
+                info[2] = loginAccount;
+                info[3] = passAccount;
+            }
+        }
+        return info;
+    }
+
+    public void loadPasswords() throws IOException{
+        BufferedReader reader = new BufferedReader(new FileReader("passwords.txt"));
+        while (reader.ready()){
+            String tempString = reader.readLine();
+            String[] info = tempString.split(" ");
+            User user = getUserByLogin(info[0]);
+            int nameAccountLength = info.length - 3;
+            String nameAccount = "";
+            for (int i = 1; i <= nameAccountLength; i++){
+                nameAccount += info[i] + " ";
+            }
+            String loginAccount = info[info.length - 2];
+            String passAccount = info[info.length - 1];
+            HashMap<User, String> name = new HashMap<>();
+            name.put(user, nameAccount);
+            HashMap<String, String> infoMap = new HashMap<>();
+            infoMap.put(loginAccount, passAccount);
+            passwords.put(name, infoMap);
+        }
+        reader.close();
+    }
+
+    public User getUserByLogin(String login){
+        return getUserByLoginAndPassword(login, getPasswordByLogin(login));
     }
 }
