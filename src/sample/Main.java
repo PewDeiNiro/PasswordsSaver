@@ -27,7 +27,7 @@ public class Main extends Application {
     ListView listView;
 
     static ArrayList<User> users = new ArrayList<>();
-    static HashMap<HashMap<User,String>, HashMap<String, String>> passwords = new HashMap<>();
+    static ArrayList<AccountInfo> passwords = new ArrayList<>();
 
     static RSA rsa;
 
@@ -168,15 +168,9 @@ public class Main extends Application {
         String login = addLoginField.getText();
         String password = addPassField.getText();
         if (authUser != null && (checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password))){
-            HashMap<String, String> info = new HashMap<>();
-            HashMap<User, String> name = new HashMap<>();
-            info.put(login, password);
-            name.put(authUser, systemName);
-            passwords.put(name, info);
+            AccountInfo info = new AccountInfo(authUser, systemName, login, password);
+            passwords.add(info);
             JOptionPane.showMessageDialog(null, "Аккаунт успешно добавлен", "Успех", JOptionPane.INFORMATION_MESSAGE);
-            try {
-                savePasswords();
-            } catch (IOException e){}
         }
         else if (authUser == null){
             JOptionPane.showMessageDialog(null, "Войдите в аккаунт", "Ошибка", JOptionPane.WARNING_MESSAGE);
@@ -189,25 +183,9 @@ public class Main extends Application {
     public void savePasswords() throws IOException{
         BufferedWriter writer = new BufferedWriter(new FileWriter("passwords.txt"));
         String resString = "";
-        Iterator<Map.Entry<HashMap<User, String>, HashMap<String, String>>> passIterator = passwords.entrySet().iterator();
-        while (passIterator.hasNext()){
-            Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = passIterator.next();
-            HashMap<User,String> name = pair.getKey();
-            Iterator<Map.Entry<User, String>> nameIterator = name.entrySet().iterator();
-            while (nameIterator.hasNext()){
-                Map.Entry<User, String> namePair = nameIterator.next();
-                User user = namePair.getKey();
-                String systemName = namePair.getValue();
-                resString += user.getLogin() + " " + systemName + " ";
-            }
-            HashMap<String, String> info = pair.getValue();
-            Iterator<Map.Entry<String, String>> infoIterator = info.entrySet().iterator();
-            while (infoIterator.hasNext()){
-                Map.Entry<String, String> infoPair = infoIterator.next();
-                String login = infoPair.getKey();
-                String password = infoPair.getValue();
-                resString += login + " " + password + "\n";
-            }
+        for (int i = 0; i < passwords.size(); i++){
+            AccountInfo accountInfo = passwords.get(i);
+            resString += accountInfo.getUser().getLogin() + " " + accountInfo.getAccount() + " " + accountInfo.getUser() + " " + accountInfo.getPassword() + "\n";
         }
         writer.write(resString);
         writer.close();
@@ -253,11 +231,8 @@ public class Main extends Application {
             }
             String loginAccount = info[info.length - 2];
             String passAccount = info[info.length - 1];
-            HashMap<User, String> name = new HashMap<>();
-            name.put(user, nameAccount);
-            HashMap<String, String> infoMap = new HashMap<>();
-            infoMap.put(loginAccount, passAccount);
-            passwords.put(name, infoMap);
+            AccountInfo accountInfo = new AccountInfo(user, nameAccount, loginAccount, passAccount);
+            passwords.add(accountInfo);
         }
         reader.close();
     }
@@ -267,11 +242,14 @@ public class Main extends Application {
     }
 
     public void getEditableInfo(){
-        String selectedItem = (String)listView.getSelectionModel().getSelectedItem();
+        AccountInfo selectedItem = (AccountInfo) listView.getSelectionModel().getSelectedItem();
         if (authUser != null && selectedItem != null){
-            Iterator<Map.Entry<HashMap<User, String>, HashMap<String, String>>> iterator = passwords.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = iterator.next()
+            for (int i = 0; i < passwords.size(); i++){
+                AccountInfo tempInfo = passwords.get(i);
+                if (tempInfo.getUser().getLogin().equals(authUser.getLogin()) && selectedItem.getAccount().equals(selectedItem.getAccount())){
+                    showLoginField.setText(tempInfo.getLogin());
+                    showPassField.setText(tempInfo.getPassword());
+                }
             }
         }
         else if (authUser == null){
@@ -282,19 +260,8 @@ public class Main extends Application {
         }
     }
     public void showAccounts() {
-        ObservableList<String> list = FXCollections.observableArrayList();
-        Iterator<Map.Entry<HashMap<User, String>, HashMap<String, String>>> iterator = passwords.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = iterator.next();
-            HashMap<User, String> name = pair.getKey();
-            Iterator<Map.Entry<User, String>> nameIterator = name.entrySet().iterator();
-            while (nameIterator.hasNext()){
-                Map.Entry<User, String> namePair = nameIterator.next();
-                if (authUser.getLogin().equals(namePair.getKey().getLogin())){
-                    list.add(namePair.getValue());
-                }
-            }
-        }
+        ObservableList<AccountInfo> list = FXCollections.observableArrayList();
+        list.addAll(passwords);
         listView.setItems(list);
     }
 }
