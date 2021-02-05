@@ -1,10 +1,13 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -17,9 +20,11 @@ import java.util.*;
 public class Main extends Application {
 
     @FXML
-    TextField regLoginField, authLoginField, addLoginField, nameSystemField;
+    TextField regLoginField, authLoginField, addLoginField, nameSystemField, showLoginField, showPassField;
     @FXML
     PasswordField regPassField, regPassControlField, authPassField, addPassField;
+    @FXML
+    ListView listView;
 
     static ArrayList<User> users = new ArrayList<>();
     static HashMap<HashMap<User,String>, HashMap<String, String>> passwords = new HashMap<>();
@@ -122,6 +127,7 @@ public class Main extends Application {
                 return;
             }
             authUser = tempUser;
+            showAccounts();
             JOptionPane.showMessageDialog(null, "Вы успешно вошли в аккаунт!", "Успех", JOptionPane.INFORMATION_MESSAGE);
         }
         else if (login.trim().equals("") || password.trim().equals("")){
@@ -167,6 +173,7 @@ public class Main extends Application {
             info.put(login, password);
             name.put(authUser, systemName);
             passwords.put(name, info);
+            JOptionPane.showMessageDialog(null, "Аккаунт успешно добавлен", "Успех", JOptionPane.INFORMATION_MESSAGE);
             try {
                 savePasswords();
             } catch (IOException e){}
@@ -257,5 +264,37 @@ public class Main extends Application {
 
     public User getUserByLogin(String login){
         return getUserByLoginAndPassword(login, getPasswordByLogin(login));
+    }
+
+    public void getEditableInfo(){
+        String selectedItem = (String)listView.getSelectionModel().getSelectedItem();
+        if (authUser != null && selectedItem != null){
+            Iterator<Map.Entry<HashMap<User, String>, HashMap<String, String>>> iterator = passwords.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = iterator.next()
+            }
+        }
+        else if (authUser == null){
+            JOptionPane.showMessageDialog(null, "Войдите в аккаунт", "Ошибка", JOptionPane.WARNING_MESSAGE);
+        }
+        else if (selectedItem == null){
+            JOptionPane.showMessageDialog(null, "Выберите элемент списка", "Ошибка", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    public void showAccounts() {
+        ObservableList<String> list = FXCollections.observableArrayList();
+        Iterator<Map.Entry<HashMap<User, String>, HashMap<String, String>>> iterator = passwords.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = iterator.next();
+            HashMap<User, String> name = pair.getKey();
+            Iterator<Map.Entry<User, String>> nameIterator = name.entrySet().iterator();
+            while (nameIterator.hasNext()){
+                Map.Entry<User, String> namePair = nameIterator.next();
+                if (authUser.getLogin().equals(namePair.getKey().getLogin())){
+                    list.add(namePair.getValue());
+                }
+            }
+        }
+        listView.setItems(list);
     }
 }
