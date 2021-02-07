@@ -24,7 +24,7 @@ public class Main extends Application {
     @FXML
     PasswordField regPassField, regPassControlField, authPassField, addPassField;
     @FXML
-    ListView listView;
+    ListView listView, removeList;
 
     static ArrayList<User> users = new ArrayList<>();
     static ArrayList<AccountInfo> passwords = new ArrayList<>();
@@ -82,7 +82,7 @@ public class Main extends Application {
         BufferedWriter writer = new BufferedWriter(new FileWriter("users.txt"));
         String saveString = "";
         for (User user : users){
-            saveString = saveString + user.getLogin() + " " + user.getPassword() + "\n";
+            saveString += user.getLogin() + " " + user.getPassword() + "\n";
         }
         writer.write(saveString);
         writer.close();
@@ -94,17 +94,11 @@ public class Main extends Application {
             String temp = reader.readLine();
             if (!(temp.trim().equals(""))){
                 String[] tempArray = temp.split(" ");
-                users.add(new User(tempArray[0], tempArray[1]));
+                users.add(new User(rsa.decrypt(tempArray[0]), rsa.decrypt(tempArray[1])));
             }
         }
         reader.close();
 
-    }
-
-    public void printList(List list){
-        for (int i = 0; i < list.size(); i++){
-            System.out.println(list.get(i));
-        }
     }
 
     public boolean checkUser(String login, String password){
@@ -170,6 +164,10 @@ public class Main extends Application {
         if (authUser != null && (checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password))){
             AccountInfo info = new AccountInfo(authUser, systemName, login, password);
             passwords.add(info);
+            showAccounts();
+            try {
+                savePasswords();
+            }catch (IOException e){}
             JOptionPane.showMessageDialog(null, "Аккаунт успешно добавлен", "Успех", JOptionPane.INFORMATION_MESSAGE);
         }
         else if (authUser == null){
@@ -185,37 +183,10 @@ public class Main extends Application {
         String resString = "";
         for (int i = 0; i < passwords.size(); i++){
             AccountInfo accountInfo = passwords.get(i);
-            resString += accountInfo.getUser().getLogin() + " " + accountInfo.getAccount() + " " + accountInfo.getUser() + " " + accountInfo.getPassword() + "\n";
+            resString += accountInfo.getUser().getLogin() + " " + accountInfo.getAccount() + " " + accountInfo.getLogin() + " " + accountInfo.getPassword() + "\n";
         }
         writer.write(resString);
         writer.close();
-    }
-    //returns login user, name of account, login of account, password of account
-    public String[] getInfoFromPasswordsMap(HashMap<HashMap<User, String>, HashMap<String, String>> map){
-        String[] info = new String[4];
-        Iterator<Map.Entry<HashMap<User,String>, HashMap<String, String>>> mainIterator = map.entrySet().iterator();
-        while (mainIterator.hasNext()){
-            Map.Entry<HashMap<User, String>, HashMap<String, String>> pair = mainIterator.next();
-            HashMap<User, String> name = pair.getKey();
-            Iterator<Map.Entry<User, String>> nameIterator = name.entrySet().iterator();
-            while (nameIterator.hasNext()){
-                Map.Entry<User, String> namePair = nameIterator.next();
-                User user = namePair.getKey();
-                String nameAccount = namePair.getValue();
-                info[0] = user.getLogin();
-                info[1] = nameAccount;
-            }
-            HashMap<String, String> infoMap = pair.getValue();
-            Iterator<Map.Entry<String, String>> infoIterator = infoMap.entrySet().iterator();
-            while (infoIterator.hasNext()){
-                Map.Entry<String, String> infoPair = infoIterator.next();
-                String loginAccount = infoPair.getKey();
-                String passAccount = infoPair.getValue();
-                info[2] = loginAccount;
-                info[3] = passAccount;
-            }
-        }
-        return info;
     }
 
     public void loadPasswords() throws IOException{
@@ -246,7 +217,7 @@ public class Main extends Application {
         if (authUser != null && selectedItem != null){
             for (int i = 0; i < passwords.size(); i++){
                 AccountInfo tempInfo = passwords.get(i);
-                if (tempInfo.getUser().getLogin().equals(authUser.getLogin()) && selectedItem.getAccount().equals(selectedItem.getAccount())){
+                if (tempInfo.getUser().getLogin().equals(authUser.getLogin()) && selectedItem.getAccount().equals(passwords.get(i).getAccount())){
                     showLoginField.setText(tempInfo.getLogin());
                     showPassField.setText(tempInfo.getPassword());
                 }
@@ -263,5 +234,21 @@ public class Main extends Application {
         ObservableList<AccountInfo> list = FXCollections.observableArrayList();
         list.addAll(passwords);
         listView.setItems(list);
+        removeList.setItems(list);
+    }
+
+    public void removeAccount(){
+        AccountInfo accountInfo = (AccountInfo)removeList.getSelectionModel().getSelectedItem();
+        for (int i = 0; i < passwords.size(); i++){
+            if (accountInfo.getAccount().equals(passwords.get(i).getAccount()) &&
+            accountInfo.getUser().getLogin().equals(passwords.get(i).getUser().getLogin())){
+                passwords.remove(i);
+                break;
+            }
+        }
+        showAccounts();
+        try {
+            savePasswords();
+        }catch (IOException e){}
     }
 }

@@ -126,7 +126,12 @@
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
-                  <ListView layoutX="200.0" layoutY="34.0" prefHeight="200.0" prefWidth="200.0" />
+                  <ListView fx:id="removeList" layoutX="207.0" layoutY="39.0" prefHeight="200.0" prefWidth="200.0" />
+                  <Button layoutX="262.0" layoutY="281.0" mnemonicParsing="false" onAction="#removeAccount" text="Удалить">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Button>
                </children>
             </AnchorPane>
         </content>
