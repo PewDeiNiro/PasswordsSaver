@@ -12,8 +12,11 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import javax.crypto.Cipher;
 import javax.swing.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.util.*;
 
 
@@ -39,18 +42,24 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        rsa = new RSA();
         try {
             loadList();
             loadPasswords();
-        } catch (IOException e){
-
-        }
-        rsa = new RSA();
+        } catch (IOException e){}
+        printList();
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         Scene scene = new Scene(root);
         primaryStage.setTitle("PasswordSaver");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public void printList(){
+        for (int i = 0; i < users.size(); i++){
+            User user = users.get(i);
+            System.out.println(user.getLogin() + " " + user.getPassword());
+        }
     }
 
     public void registration(){
@@ -79,10 +88,11 @@ public class Main extends Application {
     }
 
     public void saveList() throws IOException {
+        RSA rsa = new RSA();
         BufferedWriter writer = new BufferedWriter(new FileWriter("users.txt"));
         String saveString = "";
         for (User user : users){
-            saveString += user.getLogin() + " " + user.getPassword() + "\n";
+            saveString += rsa.encrypt(user.getLogin()) + " " + rsa.encrypt(user.getPassword()) + "\n";
         }
         writer.write(saveString);
         writer.close();
@@ -251,4 +261,7 @@ public class Main extends Application {
             savePasswords();
         }catch (IOException e){}
     }
+
+
+
 }

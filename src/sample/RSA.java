@@ -22,7 +22,9 @@ public class RSA {
 
             publicKey = pair.getPublic();
             privateKey = pair.getPrivate();
-        } catch (NoSuchAlgorithmException e) {}
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("GenerateKey error");
+        }
 
     }
 
@@ -35,6 +37,7 @@ public class RSA {
 
             return Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception e) {
+            System.out.println("Encrypt Error");
             return "";
         }
 
@@ -53,6 +56,7 @@ public class RSA {
             return new String(decrypted, StandardCharsets.UTF_8);
 
         } catch (Exception e) {
+            System.out.println("Dectyt Error");
             return "";
         }
 
