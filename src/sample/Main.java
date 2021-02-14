@@ -7,16 +7,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import javax.crypto.Cipher;
 import javax.swing.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.security.*;
 import java.util.*;
 
 
@@ -28,13 +23,22 @@ public class Main extends Application {
     PasswordField regPassField, regPassControlField, authPassField, addPassField;
     @FXML
     ListView listView, removeList;
+    @FXML
+    Hyperlink url;
 
     static ArrayList<User> users = new ArrayList<>();
     static ArrayList<AccountInfo> passwords = new ArrayList<>();
 
     static RSA rsa;
 
-    User authUser;
+
+    static Stage primaryStage;
+    static Scene login, work;
+    static User authUser;
+
+    String userLogin, userPassword;
+
+    //TODO разделить на сцены, оформление
 
     public static void main(String[] args) {
         launch(args);
@@ -42,24 +46,18 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        this.primaryStage = primaryStage;
         rsa = new RSA();
         try {
             loadList();
             loadPasswords();
         } catch (IOException e){}
-        printList();
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        Scene scene = new Scene(root);
+        Parent root = FXMLLoader.load(getClass().getResource("login.fxml"));
+        login = new Scene(root);
+        work = new Scene(FXMLLoader.load(getClass().getResource("work.fxml")));
         primaryStage.setTitle("PasswordSaver");
-        primaryStage.setScene(scene);
+        primaryStage.setScene(login);
         primaryStage.show();
-    }
-
-    public void printList(){
-        for (int i = 0; i < users.size(); i++){
-            User user = users.get(i);
-            System.out.println(user.getLogin() + " " + user.getPassword());
-        }
     }
 
     public void registration(){
@@ -92,7 +90,7 @@ public class Main extends Application {
         BufferedWriter writer = new BufferedWriter(new FileWriter("users.txt"));
         String saveString = "";
         for (User user : users){
-            saveString += rsa.encrypt(user.getLogin()) + " " + rsa.encrypt(user.getPassword()) + "\n";
+            saveString += user.getLogin() + " " + user.getPassword() + "\n";
         }
         writer.write(saveString);
         writer.close();
@@ -104,7 +102,7 @@ public class Main extends Application {
             String temp = reader.readLine();
             if (!(temp.trim().equals(""))){
                 String[] tempArray = temp.split(" ");
-                users.add(new User(rsa.decrypt(tempArray[0]), rsa.decrypt(tempArray[1])));
+                users.add(new User(tempArray[0], tempArray[1]));
             }
         }
         reader.close();
@@ -125,13 +123,16 @@ public class Main extends Application {
         String login = authLoginField.getText();
         String password = authPassField.getText();
         if (!(login.trim().equals("") || password.trim().equals("")) && checkUser(login, password)){
-            User tempUser = getUserByLoginAndPassword(login, password);
-            if (tempUser == null){
-                JOptionPane.showMessageDialog(null, "Данного пользователя не существует", "Ошибка", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            authUser = tempUser;
-            showAccounts();
+
+            userLogin = login;
+            userPassword = password;
+            System.out.println(userLogin + " " + userPassword);
+
+            primaryStage.setScene(work);
+            authorize(userLogin, userPassword);
+            System.out.println(authUser);
+
+
             JOptionPane.showMessageDialog(null, "Вы успешно вошли в аккаунт!", "Успех", JOptionPane.INFORMATION_MESSAGE);
         }
         else if (login.trim().equals("") || password.trim().equals("")){
@@ -140,6 +141,24 @@ public class Main extends Application {
         else if (!checkUser(login, password)){
             JOptionPane.showMessageDialog(null, "Данного пользователя не существует", "Ошибка", JOptionPane.WARNING_MESSAGE);
         }
+    }
+
+    public void authorize(String login, String password){
+        authUser = getUserByLoginAndPassword(login, password);
+    }
+
+    public void showAccountsTab(){
+        authUser = getUserByLoginAndPassword(userLogin, userPassword);
+        showAccounts();
+    }
+
+    public void showRemoveTab(){
+        authUser = getUserByLoginAndPassword(userLogin, userPassword);
+        showAccounts();
+    }
+
+    public void showAddTab(){
+        authUser = getUserByLoginAndPassword(userLogin, userPassword);
     }
 
     public User getUserByLoginAndPassword(String login, String password){
@@ -208,11 +227,17 @@ public class Main extends Application {
             int nameAccountLength = info.length - 3;
             String nameAccount = "";
             for (int i = 1; i <= nameAccountLength; i++){
-                nameAccount += info[i] + " ";
+                if (i != nameAccountLength) {
+                    nameAccount += info[i] + " ";
+                }
+                else{
+                    nameAccount += info[i];
+                }
             }
             String loginAccount = info[info.length - 2];
             String passAccount = info[info.length - 1];
             AccountInfo accountInfo = new AccountInfo(user, nameAccount, loginAccount, passAccount);
+            accountInfo.url = accountInfo.getURL();
             passwords.add(accountInfo);
         }
         reader.close();
@@ -223,6 +248,8 @@ public class Main extends Application {
     }
 
     public void getEditableInfo(){
+        authUser = getUserByLoginAndPassword(userLogin, userPassword);
+        System.out.println(authUser);
         AccountInfo selectedItem = (AccountInfo) listView.getSelectionModel().getSelectedItem();
         if (authUser != null && selectedItem != null){
             for (int i = 0; i < passwords.size(); i++){
@@ -230,6 +257,8 @@ public class Main extends Application {
                 if (tempInfo.getUser().getLogin().equals(authUser.getLogin()) && selectedItem.getAccount().equals(passwords.get(i).getAccount())){
                     showLoginField.setText(tempInfo.getLogin());
                     showPassField.setText(tempInfo.getPassword());
+                    System.out.println(tempInfo.getURL());
+                    url.setText(tempInfo.getURL());
                 }
             }
         }
@@ -248,6 +277,7 @@ public class Main extends Application {
     }
 
     public void removeAccount(){
+        authUser = getUserByLoginAndPassword(userLogin, userPassword);
         AccountInfo accountInfo = (AccountInfo)removeList.getSelectionModel().getSelectedItem();
         for (int i = 0; i < passwords.size(); i++){
             if (accountInfo.getAccount().equals(passwords.get(i).getAccount()) &&
@@ -260,6 +290,11 @@ public class Main extends Application {
         try {
             savePasswords();
         }catch (IOException e){}
+    }
+
+    public void openLink(){
+        AccountInfo accountInfo = (AccountInfo)listView.getSelectionModel().getSelectedItem();
+        getHostServices().showDocument("https://" + accountInfo.getURL());
     }
 
 

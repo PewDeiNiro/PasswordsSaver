@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main">
+  <tabs>
+      <Tab onSelectionChanged="#showAddTab" text="Добавить аккаунт">
+          <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                  <children>
+                      <Label layoutX="275.0" layoutY="113.0" text="Логин">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Label>
+                      <TextField fx:id="addLoginField" layoutX="226.0" layoutY="161.0" />
+                      <Label layoutX="269.0" layoutY="199.0" text="Пароль">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Label>
+                      <PasswordField fx:id="addPassField" layoutX="226.0" layoutY="244.0" />
+                      <Button layoutX="248.0" layoutY="301.0" mnemonicParsing="false" onAction="#addAccount" text="Добавить">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Button>
+                      <Label layoutX="261.0" layoutY="24.0" text="Название">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Label>
+                      <TextField fx:id="nameSystemField" layoutX="226.0" layoutY="68.0" />
+                  </children>
+              </AnchorPane>
+          </content>
+      </Tab>
+      <Tab onSelectionChanged="#showAccountsTab" text="Просмотреть аккаунты">
+          <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                  <children>
+                      <ListView fx:id="listView" layoutX="12.0" layoutY="12.0" prefHeight="291.0" prefWidth="238.0" />
+                      <Button layoutX="40.0" layoutY="318.0" mnemonicParsing="false" onAction="#getEditableInfo" text="Получить данные">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Button>
+                      <Label layoutX="394.0" layoutY="25.0" text="Логин">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Label>
+                      <Label layoutX="389.0" layoutY="172.0" text="Пароль">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Label>
+                      <TextField fx:id="showLoginField" editable="false" layoutX="345.0" layoutY="97.0" promptText="логин тут" />
+                      <TextField fx:id="showPassField" editable="false" layoutX="346.0" layoutY="236.0" promptText="пароль тут" />
+                      <Hyperlink fx:id="url" layoutX="390.0" layoutY="292.0" onAction="#openLink" />
+                  </children></AnchorPane>
+          </content>
+      </Tab>
+      <Tab onSelectionChanged="#showRemoveTab" text="Удалить аккаунт">
+          <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                  <children>
+                      <ListView fx:id="removeList" layoutX="207.0" layoutY="39.0" prefHeight="200.0" prefWidth="200.0" />
+                      <Button layoutX="262.0" layoutY="281.0" mnemonicParsing="false" onAction="#removeAccount" text="Удалить">
+                          <font>
+                              <Font size="18.0" />
+                          </font>
+                      </Button>
+                  </children>
+              </AnchorPane>
+          </content>
+      </Tab>
+  </tabs>
+</TabPane>
