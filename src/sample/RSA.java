@@ -1,17 +1,41 @@
 package sample;
 
 import javax.crypto.Cipher;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
 
-public class RSA {
+public class RSA{
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
+    private final String filePath = "keys.txt";
 
     public RSA(){
-        generateKeys();
+        File file = new File(filePath);
+        if (file.length() == 0) {
+            generateKeys();
+        }
+        else{
+            //try {
+                //loadKeys();
+            //} catch (IOException | ClassNotFoundException e) {}
+        }
+    }
+
+    public void saveKeys() throws IOException {
+        ObjectOutputStream keySaver = new ObjectOutputStream(new FileOutputStream(filePath));
+        keySaver.writeObject(publicKey + "___" + privateKey);
+        keySaver.close();
+    }
+
+    public void loadKeys() throws IOException, ClassNotFoundException {
+        ObjectInputStream keyLoader = new ObjectInputStream(new FileInputStream(filePath));
+        Object[] keys = keyLoader.readObject().toString().split("___");
+        publicKey = (PublicKey)keys[0];
+        privateKey = (PrivateKey)keys[1];
+        keyLoader.close();
     }
 
     public void generateKeys(){
@@ -22,9 +46,10 @@ public class RSA {
 
             publicKey = pair.getPublic();
             privateKey = pair.getPrivate();
+            //saveKeys();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("GenerateKey error");
-        }
+        } catch (IOException e) {}
 
     }
 
@@ -56,7 +81,7 @@ public class RSA {
             return new String(decrypted, StandardCharsets.UTF_8);
 
         } catch (Exception e) {
-            System.out.println("Dectyt Error");
+            System.out.println("Decrypt Error");
             return "";
         }
 

@@ -36,7 +36,7 @@ public class Main extends Application {
     static Scene login, work;
     static User authUser;
 
-    String userLogin, userPassword;
+    static String userLogin, userPassword;
 
     //TODO разделить на сцены, оформление
 
@@ -126,13 +126,8 @@ public class Main extends Application {
 
             userLogin = login;
             userPassword = password;
-            System.out.println(userLogin + " " + userPassword);
-
             primaryStage.setScene(work);
             authorize(userLogin, userPassword);
-            System.out.println(authUser);
-
-
             JOptionPane.showMessageDialog(null, "Вы успешно вошли в аккаунт!", "Успех", JOptionPane.INFORMATION_MESSAGE);
         }
         else if (login.trim().equals("") || password.trim().equals("")){
@@ -148,7 +143,6 @@ public class Main extends Application {
     }
 
     public void showAccountsTab(){
-        authUser = getUserByLoginAndPassword(userLogin, userPassword);
         showAccounts();
     }
 
@@ -249,7 +243,6 @@ public class Main extends Application {
 
     public void getEditableInfo(){
         authUser = getUserByLoginAndPassword(userLogin, userPassword);
-        System.out.println(authUser);
         AccountInfo selectedItem = (AccountInfo) listView.getSelectionModel().getSelectedItem();
         if (authUser != null && selectedItem != null){
             for (int i = 0; i < passwords.size(); i++){
@@ -257,7 +250,6 @@ public class Main extends Application {
                 if (tempInfo.getUser().getLogin().equals(authUser.getLogin()) && selectedItem.getAccount().equals(passwords.get(i).getAccount())){
                     showLoginField.setText(tempInfo.getLogin());
                     showPassField.setText(tempInfo.getPassword());
-                    System.out.println(tempInfo.getURL());
                     url.setText(tempInfo.getURL());
                 }
             }
