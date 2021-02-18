@@ -15,7 +15,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class Main extends Application {
+public class Main extends Application implements Serializable{
 
     @FXML
     TextField regLoginField, authLoginField, addLoginField, nameSystemField, showLoginField, showPassField;
@@ -48,6 +48,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         this.primaryStage = primaryStage;
         rsa = new RSA();
+
         try {
             loadList();
             loadPasswords();
@@ -287,6 +288,10 @@ public class Main extends Application {
     public void openLink(){
         AccountInfo accountInfo = (AccountInfo)listView.getSelectionModel().getSelectedItem();
         getHostServices().showDocument("https://" + accountInfo.getURL());
+    }
+
+    public void changeAccount(){
+        primaryStage.setScene(login);
     }
 
 
