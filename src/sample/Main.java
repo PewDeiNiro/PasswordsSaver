@@ -91,7 +91,7 @@ public class Main extends Application implements Serializable{
         BufferedWriter writer = new BufferedWriter(new FileWriter("users.txt"));
         String saveString = "";
         for (User user : users){
-            saveString += user.getLogin() + " " + user.getPassword() + "\n";
+            saveString += rsa.encrypt(user.getLogin()) + " " + rsa.encrypt(user.getPassword()) + "\n";
         }
         writer.write(saveString);
         writer.close();
@@ -101,9 +101,12 @@ public class Main extends Application implements Serializable{
         BufferedReader reader = new BufferedReader(new FileReader("users.txt"));
         while (reader.ready()){
             String temp = reader.readLine();
+            if (temp.trim().equals("")){
+                continue;
+            }
             if (!(temp.trim().equals(""))){
                 String[] tempArray = temp.split(" ");
-                users.add(new User(tempArray[0], tempArray[1]));
+                users.add(new User(rsa.decrypt(tempArray[0]), rsa.decrypt(tempArray[1])));
             }
         }
         reader.close();
@@ -207,7 +210,7 @@ public class Main extends Application implements Serializable{
         String resString = "";
         for (int i = 0; i < passwords.size(); i++){
             AccountInfo accountInfo = passwords.get(i);
-            resString += accountInfo.getUser().getLogin() + " " + accountInfo.getAccount() + " " + accountInfo.getLogin() + " " + accountInfo.getPassword() + "\n";
+            resString += rsa.encrypt(accountInfo.getUser().getLogin()) + " " + rsa.encrypt(accountInfo.getAccount()) + " " + rsa.encrypt(accountInfo.getLogin()) + " " + rsa.encrypt(accountInfo.getPassword()) + "\n";
         }
         writer.write(resString);
         writer.close();
@@ -216,7 +219,10 @@ public class Main extends Application implements Serializable{
     public void loadPasswords() throws IOException{
         BufferedReader reader = new BufferedReader(new FileReader("passwords.txt"));
         while (reader.ready()){
-            String tempString = reader.readLine();
+            String tempString = rsa.decrypt(reader.readLine());
+            if (tempString.trim().equals("")){
+                continue;
+            }
             String[] info = tempString.split(" ");
             User user = getUserByLogin(info[0]);
             int nameAccountLength = info.length - 3;
