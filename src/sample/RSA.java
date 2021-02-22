@@ -77,9 +77,6 @@ public class RSA implements Serializable{
 
     }
 
-    private long[] bytesToLongs(byte[] arr){
-        return null;
-    }
 
     public String decrypt(String text){
         byte[] encrypted = Base64.getDecoder().decode(text);

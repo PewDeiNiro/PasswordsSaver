@@ -219,24 +219,24 @@ public class Main extends Application implements Serializable{
     public void loadPasswords() throws IOException{
         BufferedReader reader = new BufferedReader(new FileReader("passwords.txt"));
         while (reader.ready()){
-            String tempString = rsa.decrypt(reader.readLine());
+            String tempString = reader.readLine();
             if (tempString.trim().equals("")){
                 continue;
             }
             String[] info = tempString.split(" ");
-            User user = getUserByLogin(info[0]);
+            User user = getUserByLogin(rsa.decrypt(info[0]));
             int nameAccountLength = info.length - 3;
             String nameAccount = "";
             for (int i = 1; i <= nameAccountLength; i++){
                 if (i != nameAccountLength) {
-                    nameAccount += info[i] + " ";
+                    nameAccount += rsa.decrypt(info[i]) + " ";
                 }
                 else{
-                    nameAccount += info[i];
+                    nameAccount += rsa.decrypt(info[i]);
                 }
             }
-            String loginAccount = info[info.length - 2];
-            String passAccount = info[info.length - 1];
+            String loginAccount = rsa.decrypt(info[info.length - 2]);
+            String passAccount = rsa.decrypt(info[info.length - 1]);
             AccountInfo accountInfo = new AccountInfo(user, nameAccount, loginAccount, passAccount);
             accountInfo.url = accountInfo.getURL();
             passwords.add(accountInfo);
