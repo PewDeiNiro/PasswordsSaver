@@ -62,18 +62,33 @@ public class Main extends Application implements Serializable{
     }
 
     public void registration(){
-        if (regPassField.getText().equals(regPassControlField.getText()) && !(checkLogin(regLoginField.getText()))){
+        if (regPassField.getText().equals(regPassControlField.getText()) && !(checkLogin(regLoginField.getText())) && !(regLoginField.getText().trim().equals("") || regPassField.getText().trim().equals(""))){
             users.add(new User(regLoginField.getText(), regPassField.getText()));
+            regLoginField.setText("");
+            regPassField.setText("");
+            regPassControlField.setText("");
             try {
                 saveList();
             } catch (IOException e){}
             JOptionPane.showMessageDialog(null, "Пользователь успешно зарегистрирован", "Успех", JOptionPane.INFORMATION_MESSAGE);
         }
         else if (!(regPassField.getText().equals(regPassControlField.getText()))){
+            regLoginField.setText("");
+            regPassField.setText("");
+            regPassControlField.setText("");
             JOptionPane.showMessageDialog(null, "Поле пароль и поле подтверждение не совпадают", "Ошибка", JOptionPane.WARNING_MESSAGE);
         }
         else if (checkLogin(regLoginField.getText())){
+            regLoginField.setText("");
+            regPassField.setText("");
+            regPassControlField.setText("");
             JOptionPane.showMessageDialog(null, "Данный пользователь уже существует", "Ошибка", JOptionPane.WARNING_MESSAGE);
+        }
+        else if (regLoginField.getText().trim().equals("") || regPassField.getText().trim().equals("")){
+            regLoginField.setText("");
+            regPassField.setText("");
+            regPassControlField.setText("");
+            JOptionPane.showMessageDialog(null, "Не оставляйте поля пустыми", "Ошибка", JOptionPane.WARNING_MESSAGE);
         }
     }
     //true is have login, false isn't have login
@@ -126,6 +141,8 @@ public class Main extends Application implements Serializable{
     public void authorization(){
         String login = authLoginField.getText();
         String password = authPassField.getText();
+        authLoginField.setText("");
+        authPassField.setText("");
         if (!(login.trim().equals("") || password.trim().equals("")) && checkUser(login, password)){
 
             userLogin = login;
@@ -147,16 +164,24 @@ public class Main extends Application implements Serializable{
     }
 
     public void showAccountsTab(){
-        showAccounts();
+        authUser = getUserByLoginAndPassword(userLogin, userPassword);
+        try {
+            showAccounts();
+        } catch (NullPointerException e){}
     }
 
     public void showRemoveTab(){
         authUser = getUserByLoginAndPassword(userLogin, userPassword);
-        showAccounts();
+        try {
+            showAccounts();
+        } catch (NullPointerException e){}
     }
 
     public void showAddTab(){
         authUser = getUserByLoginAndPassword(userLogin, userPassword);
+        try {
+            showAccounts();
+        } catch (NullPointerException e){}
     }
 
     public User getUserByLoginAndPassword(String login, String password){
@@ -188,7 +213,10 @@ public class Main extends Application implements Serializable{
         String systemName = nameSystemField.getText();
         String login = addLoginField.getText();
         String password = addPassField.getText();
-        if (authUser != null && (checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password))){
+        nameSystemField.setText("");
+        addLoginField.setText("");
+        addPassField.setText("");
+        if (authUser != null && (checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password)) && !isAccountCreated(systemName, authUser)){
             AccountInfo info = new AccountInfo(authUser, systemName, login, password);
             passwords.add(info);
             showAccounts();
@@ -203,6 +231,18 @@ public class Main extends Application implements Serializable{
         else if (!(checkNotEmpty(systemName) && checkNotEmpty(login) && checkNotEmpty(password))){
             JOptionPane.showMessageDialog(null, "Не оставляйте поля пустыми(при надобности на поле логин поставьте \"-\")", "Ошибка", JOptionPane.WARNING_MESSAGE);
         }
+        else if (isAccountCreated(systemName, authUser)){
+            JOptionPane.showMessageDialog(null, "Данный аккаунт уже существует", "Ошибка", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public boolean isAccountCreated(String account, User user){
+        for (AccountInfo accountInfo : passwords){
+            if (accountInfo.getAccount().equals(account) && accountInfo.getUser().getLogin().equals(user.getLogin())){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void savePasswords() throws IOException{
@@ -270,7 +310,11 @@ public class Main extends Application implements Serializable{
     }
     public void showAccounts() {
         ObservableList<AccountInfo> list = FXCollections.observableArrayList();
-        list.addAll(passwords);
+        for (AccountInfo accountInfo : passwords){
+            if (accountInfo.getUser().getLogin().equals(authUser.getLogin())){
+                list.add(accountInfo);
+            }
+        }
         listView.setItems(list);
         removeList.setItems(list);
     }
@@ -278,10 +322,17 @@ public class Main extends Application implements Serializable{
     public void removeAccount(){
         authUser = getUserByLoginAndPassword(userLogin, userPassword);
         AccountInfo accountInfo = (AccountInfo)removeList.getSelectionModel().getSelectedItem();
+        int code = JOptionPane.showConfirmDialog(null, "Вы точно хотите удалить аккаунт?", "Удаление аккаунта", JOptionPane.YES_NO_OPTION);
+        if (code == JOptionPane.NO_OPTION){
+            return;
+        }
         for (int i = 0; i < passwords.size(); i++){
             if (accountInfo.getAccount().equals(passwords.get(i).getAccount()) &&
-            accountInfo.getUser().getLogin().equals(passwords.get(i).getUser().getLogin())){
+                accountInfo.getUser().getLogin().equals(passwords.get(i).getUser().getLogin())){
                 passwords.remove(i);
+                showLoginField.setText("");
+                showPassField.setText("");
+                url.setText("");
                 break;
             }
         }
