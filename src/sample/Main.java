@@ -46,6 +46,8 @@ public class Main extends Application implements Serializable{
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        create("resources/passwords.txt");
+        create("resources/users.txt");
         this.primaryStage = primaryStage;
         rsa = new RSA();
 
@@ -351,6 +353,13 @@ public class Main extends Application implements Serializable{
         primaryStage.setScene(login);
     }
 
-
+    public static void create(String path) {
+        File file = new File(path);
+        if (!file.exists() || file.isDirectory()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {}
+        }
+    }
 
 }

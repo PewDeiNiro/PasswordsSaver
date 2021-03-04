@@ -9,9 +9,10 @@ import java.util.Base64;
 public class RSA implements Serializable{
 
     private Keys keys;
-    private final String PATH = "resources/keys.ser";
+    public static final String PATH = "resources/keys.ser";
 
     public RSA(){
+        Main.create(PATH);
         if (checkEmptyFile(PATH)) {
             generateKeys();
         }
