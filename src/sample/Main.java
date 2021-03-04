@@ -103,7 +103,7 @@ public class Main extends Application implements Serializable{
 
     public void saveList() throws IOException {
         RSA rsa = new RSA();
-        BufferedWriter writer = new BufferedWriter(new FileWriter("users.txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("resources/users.txt"));
         String saveString = "";
         for (User user : users){
             saveString += rsa.encrypt(user.getLogin()) + " " + rsa.encrypt(user.getPassword()) + "\n";
@@ -113,7 +113,7 @@ public class Main extends Application implements Serializable{
     }
 
     public void loadList() throws IOException{
-        BufferedReader reader = new BufferedReader(new FileReader("users.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("resources/users.txt"));
         while (reader.ready()){
             String temp = reader.readLine();
             if (temp.trim().equals("")){
@@ -246,7 +246,7 @@ public class Main extends Application implements Serializable{
     }
 
     public void savePasswords() throws IOException{
-        BufferedWriter writer = new BufferedWriter(new FileWriter("passwords.txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("resources/passwords.txt"));
         String resString = "";
         for (int i = 0; i < passwords.size(); i++){
             AccountInfo accountInfo = passwords.get(i);
@@ -257,7 +257,7 @@ public class Main extends Application implements Serializable{
     }
 
     public void loadPasswords() throws IOException{
-        BufferedReader reader = new BufferedReader(new FileReader("passwords.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("resources/passwords.txt"));
         while (reader.ready()){
             String tempString = reader.readLine();
             if (tempString.trim().equals("")){
